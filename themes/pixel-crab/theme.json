@@ -195,7 +195,13 @@
     "rewrite": "rewrite.svg",
     "script": "script.svg",
     "redpen": "redpen.svg",
-    "fork": "fork.svg"
+    "fork": "fork.svg",
+    "meow": "meow.svg",
+    "woof": "woof.svg",
+    "bunny": "bunny.svg",
+    "kiss": "kiss.svg",
+    "daze": "daze.svg",
+    "bubbletea": "bubbletea.svg"
   },
   "miniMode": {
     "supported": false
