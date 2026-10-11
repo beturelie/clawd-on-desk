@@ -28,6 +28,8 @@
     "verify:release": "node scripts/verify-release-version.js && node scripts/verify-release-contributors.js",
     "create-theme": "node scripts/create-theme.js",
     "export-agent-icons": "node scripts/export-agent-icons.js",
+    "install:crab-moods": "node scripts/install-crab-moods.js",
+    "uninstall:crab-moods": "node scripts/install-crab-moods.js --uninstall",
     "install:claude-hooks": "node hooks/install.js",
     "uninstall:claude-hooks": "node hooks/uninstall.js",
     "install:gemini-hooks": "node hooks/gemini-install.js",

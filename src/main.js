@@ -195,6 +195,7 @@ const { describeGeometrySync } = require("./pet-accessory-state");
 const { createDisplayedVisualProjection } = require("./displayed-visual-projection");
 const { getRightSideMirrorFiles, isVisualMirrored, resolveMirroredFile } = require("./mirrored-files");
 const { createTestReactionHandler } = require("./test-reaction");
+const { createEmotionReactionHandler } = require("./emotion-reaction");
 const createMacHideController = require("./mac-hide");
 const {
   getFocusableLocalHudSessionIds: selectFocusableLocalHudSessionIds,
@@ -3031,6 +3032,7 @@ const _serverCtx = {
   syncPermissionBubbleContent,
   clearCodexUserInputBubbles,
   handleTestResult: (result, context) => handleTestResult(result, context),
+  handleEmotion: (name, context) => handleEmotion(name, context),
   maybeStartRemoteApproval,
   replyOpencodeFamilyPermission,
   dismissOpencodeFamilyPermissionResolvedExternally,
@@ -5595,6 +5597,16 @@ const handleTestResult = createTestReactionHandler({
   isDragging: () => petWindowRuntime.isDragLocked(),
   hasPetWindow: () => !!(win && !win.isDestroyed()),
   sendToRenderer,
+});
+const handleEmotion = createEmotionReactionHandler({
+  getActiveTheme,
+  getDoNotDisturb: () => doNotDisturb,
+  isPetHidden: () => petWindowRuntime.isPetEffectivelyHidden(),
+  getMiniMode: () => _mini.getMiniMode(),
+  getMiniTransitioning: () => _mini.getMiniTransitioning(),
+  isDragging: () => petWindowRuntime.isDragLocked(),
+  hasPetWindow: () => !!(win && !win.isDestroyed()),
+  playVisual: (file, durationMs) => requestClickReaction(file, durationMs),
 });
 const { enterMiniMode, exitMiniMode, enterMiniViaMenu, miniPeekIn, miniPeekOut,
         checkMiniModeSnap, cancelMiniTransition, animateWindowX, animateWindowParabola } = _mini;

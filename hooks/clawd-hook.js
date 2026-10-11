@@ -287,6 +287,21 @@ function extractLastAssistantTextFromEntries(entries, sessionId, options = {}) {
   return null;
 }
 
+// A reply can end with a mood marker such as `<!-- mood: shy -->` (or the
+// visible fallback `[mood: shy]`) so a theme with chat emotions can react.
+// The last marker wins; names use the same alphabet the server re-validates.
+const MOOD_MARKER_RE = /(?:<!--\s*mood\s*[:：]\s*([a-z][a-z0-9-]{0,31})\s*-->|\[mood\s*[:：]\s*([a-z][a-z0-9-]{0,31})\s*\])/gi;
+const MOOD_SCAN_MAX = 200000;
+
+function extractMoodFromText(text) {
+  if (typeof text !== "string" || !text) return null;
+  let mood = null;
+  for (const match of text.matchAll(MOOD_MARKER_RE)) {
+    mood = (match[1] || match[2] || "").toLowerCase() || mood;
+  }
+  return mood;
+}
+
 // Find the most recent isApiErrorMessage entry for the current session, but
 // only if it belongs to the current turn. A current-turn API error has no
 // later "user" or non-error "assistant" entry — those indicate the turn has
@@ -745,6 +760,11 @@ function buildStateBody(event, payload, resolve) {
       if (assistantOutput && assistantOutput.text) {
         body.assistant_last_output = assistantOutput.text;
         if (assistantOutput.truncated) body.assistant_last_output_truncated = true;
+        const fullOutput = assistantOutput.truncated
+          ? extractLastAssistantTextFromEntries(transcriptEntries, sessionId, { maxLen: MOOD_SCAN_MAX })
+          : assistantOutput;
+        const mood = extractMoodFromText(fullOutput && fullOutput.text);
+        if (mood) body.emotion = mood;
       }
     }
   }
@@ -937,5 +957,6 @@ module.exports = {
   extractSessionTitleFromTranscript,
   extractApiErrorFromEntries,
   extractLastAssistantTextFromEntries,
+  extractMoodFromText,
   readTranscriptTailEntries,
 };

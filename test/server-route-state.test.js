@@ -138,6 +138,7 @@ function callStatePost(body, overrides = {}) {
       userInputShown: [],
       userInputCleared: [],
       testResults: [],
+      emotions: [],
     };
     const ctx = {
       STATE_SVGS: {
@@ -162,6 +163,7 @@ function callStatePost(body, overrides = {}) {
       showCodexUserInputBubble: (input) => { calls.userInputShown.push(input); return true; },
       clearCodexUserInputBubbles: (...args) => calls.userInputCleared.push(args),
       handleTestResult: (...args) => calls.testResults.push(args),
+      handleEmotion: (...args) => calls.emotions.push(args),
       ...overrides.ctx,
     };
     handleStatePost(makeReq(body, overrides.headers), res, {
@@ -1144,6 +1146,53 @@ describe("server-route-state POST", () => {
       assert.strictEqual(res.statusCode, 200);
       assert.deepStrictEqual(res.calls.testResults, []);
     }
+  });
+
+  it("relays a chat emotion from a Claude Code Stop", async () => {
+    const res = await callStatePost(JSON.stringify({
+      state: "attention",
+      session_id: "mood-session",
+      event: "Stop",
+      agent_id: "claude-code",
+      emotion: "shy",
+    }));
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.calls.updateSession.length, 1);
+    assert.deepStrictEqual(res.calls.emotions, [["shy", {
+      sessionId: localSessionKey("mood-session"),
+      agentId: "claude-code",
+      event: "Stop",
+      headless: false,
+    }]]);
+  });
+
+  it("drops malformed or out-of-lifecycle chat emotions", async () => {
+    for (const body of [
+      { state: "attention", session_id: "mood-bad-name", event: "Stop", agent_id: "claude-code", emotion: "Shy face" },
+      { state: "attention", session_id: "mood-not-string", event: "Stop", agent_id: "claude-code", emotion: { name: "shy" } },
+      { state: "working", session_id: "mood-bad-event", event: "PostToolUse", agent_id: "claude-code", emotion: "shy" },
+      { state: "attention", session_id: "mood-other-agent", event: "Stop", agent_id: "codex", emotion: "shy" },
+    ]) {
+      const res = await callStatePost(JSON.stringify(body));
+      assert.strictEqual(res.statusCode, 200);
+      assert.deepStrictEqual(res.calls.emotions, [], body.session_id);
+    }
+  });
+
+  it("keeps an emotion handler failure from failing the state POST", async () => {
+    const res = await callStatePost(JSON.stringify({
+      state: "attention",
+      session_id: "mood-failure",
+      event: "Stop",
+      agent_id: "claude-code",
+      emotion: "love",
+    }), {
+      ctx: { handleEmotion: () => { throw new Error("renderer gone"); } },
+    });
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.calls.updateSession.length, 1);
   });
 
   it("keeps a visual handler failure from failing the state POST", async () => {

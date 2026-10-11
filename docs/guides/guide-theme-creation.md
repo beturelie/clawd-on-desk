@@ -590,6 +590,21 @@ Theme-specific DND sleep transitions are available for built-in-style polish:
 
 Most third-party themes do not need this. Use `sleepSequence.mode: "direct"` if you simply want fewer sleep assets.
 
+### Chat Emotions
+
+Optional. Map mood names to one-off visuals. When a Claude Code reply ends with `<!-- mood: shy -->` (or `[mood: shy]`), the Stop hook forwards the name and the pet plays that file once, then returns to its current state:
+
+```json
+"emotions": { "shy": "my-theme-shy.svg", "love": "my-theme-love.svg" },
+"emotionDurationMs": 4000
+```
+
+- Names are lowercase letters, digits and `-`, up to 32 characters; other keys are ignored
+- Emotion files count as required assets, so the validator checks they exist
+- `emotionDurationMs` is clamped to 500–15000 and defaults to 4000
+- Emotions are skipped during Do Not Disturb, mini mode, dragging, or while the pet is hidden
+- See `docs/guides/pixel-crab.md` for a theme that uses them and for adding the marker instructions to `~/.claude/CLAUDE.md`
+
 ### Sounds
 
 Themes can map logical sound names to files in a sibling `sounds/` directory:

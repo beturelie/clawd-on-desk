@@ -2,6 +2,7 @@
 
 const path = require("path");
 const { resolveSessionIdentity } = require("./session-key");
+const { isEmotionName } = require("./theme-schema");
 const {
   assessSessionAutomationIdentity,
 } = require("./session-automation-identity");
@@ -480,6 +481,14 @@ function handleStatePost(req, res, options) {
         && (event === "PostToolUse" || event === "PostToolUseFailure")
         && (data.test_result === "pass" || data.test_result === "fail")
       ) ? data.test_result : null;
+      // Chat emotion picked by the reply's mood marker. Same trust-boundary
+      // re-validation as test_result: only a Claude Code Stop may carry it,
+      // and the name must match the theme emotion alphabet.
+      const emotion = (
+        agentId === "claude-code"
+        && event === "Stop"
+        && isEmotionName(data.emotion)
+      ) ? data.emotion : null;
       // Statusline refresh POSTs are metadata, not lifecycle (#590 B2): they
       // may only annotate an existing session with quota/context and must
       // never create one, touch recentEvents, or bump updatedAt. state.js
@@ -1142,6 +1151,16 @@ function handleStatePost(req, res, options) {
         if (testResult && !isRetiredClaudePhase && typeof ctx.handleTestResult === "function") {
           try {
             ctx.handleTestResult(testResult, {
+              sessionId: sid,
+              agentId,
+              event,
+              headless: effHeadless,
+            });
+          } catch {}
+        }
+        if (emotion && !isRetiredClaudePhase && typeof ctx.handleEmotion === "function") {
+          try {
+            ctx.handleEmotion(emotion, {
               sessionId: sid,
               agentId,
               event,

@@ -1345,6 +1345,34 @@ function addThemeAssetFile(out, filename) {
   if (safe) out.add(safe);
 }
 
+// Chat emotions: optional one-off visuals a theme exposes by name so an agent
+// reply can switch the pet's mood (see src/emotion-reaction.js). Names stay a
+// small lowercase alphabet because they arrive from hook traffic.
+const EMOTION_NAME_RE = /^[a-z][a-z0-9-]{0,31}$/;
+const DEFAULT_EMOTION_DURATION_MS = 4000;
+const MIN_EMOTION_DURATION_MS = 500;
+const MAX_EMOTION_DURATION_MS = 15000;
+
+function isEmotionName(value) {
+  return typeof value === "string" && EMOTION_NAME_RE.test(value);
+}
+
+function normalizeEmotionMap(value) {
+  if (!isPlainObject(value)) return null;
+  const out = {};
+  for (const [name, file] of Object.entries(value)) {
+    if (!isEmotionName(name) || typeof file !== "string") continue;
+    const safeFile = basenameOnly(file);
+    if (safeFile) out[name] = safeFile;
+  }
+  return Object.keys(out).length > 0 ? out : null;
+}
+
+function normalizeEmotionDurationMs(value) {
+  if (!Number.isFinite(value)) return DEFAULT_EMOTION_DURATION_MS;
+  return Math.min(MAX_EMOTION_DURATION_MS, Math.max(MIN_EMOTION_DURATION_MS, Math.round(value)));
+}
+
 function collectRequiredAssetFiles(theme) {
   const files = new Set();
   for (const usage of projectThemeVisualUsages(theme)) {
@@ -1365,6 +1393,9 @@ function collectRequiredAssetFiles(theme) {
   }
   const mirroredFiles = theme && theme.mirroredFiles;
   for (const file of Object.values(isPlainObject(mirroredFiles) ? mirroredFiles : {})) {
+    addThemeAssetFile(files, file);
+  }
+  for (const file of Object.values(normalizeEmotionMap(theme && theme.emotions) || {})) {
     addThemeAssetFile(files, file);
   }
   return [...files];
@@ -1683,6 +1714,10 @@ function mergeDefaults(raw, themeId, isBuiltin) {
   // reactions
   theme.reactions = raw.reactions || null;
 
+  // chat emotions
+  theme.emotions = normalizeEmotionMap(raw.emotions);
+  theme.emotionDurationMs = normalizeEmotionDurationMs(raw.emotionDurationMs);
+
   // workingTiers / jugglingTiers — auto sort descending by minSessions
   if (theme.workingTiers) {
     theme.workingTiers.sort((a, b) => b.minSessions - a.minSessions);
@@ -1814,6 +1849,10 @@ module.exports = {
   resolveEffectiveAccessoryAttachments,
   resolveEffectiveMouthAccessoryAttachments,
   collectRequiredAssetFiles,
+  isEmotionName,
+  normalizeEmotionMap,
+  normalizeEmotionDurationMs,
+  DEFAULT_EMOTION_DURATION_MS,
   deepMergeObject,
   basenameOnly,
   normalizeViewBox,

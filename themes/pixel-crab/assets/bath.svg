@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="320" height="320" shape-rendering="crispEdges">
+<title>洗澡 (bath)</title>
+<style>
+.b{fill:#D97757}.b2{fill:#B65B3E}.k{fill:#221B17}.w{fill:#FFFFFF}
+.p{fill:#FF8FA0}.p2{fill:#E8607A}.ang{fill:#E5484D}.ck{fill:#D9A55B}.sc{fill:#5B6FD6}.fi{fill:#4FA3C7}.sf{fill:#5DA9E9}.cap{fill:#4B5FC9}.cl{fill:#8F96A3}.wall{fill:#B9BFC7}.gd{fill:#2F8F5B}.brk{fill:#B5523B}.org{fill:#F08A3C}.scr{fill:#24302E}.ph{fill:#7FD99A}.r{fill:#E5484D}.y{fill:#F7C948}.c{fill:#7CC8F2}.gr{fill:#6BCB77}
+.o{fill:#3A302B}.f{fill:#FBF6EE}.gy{fill:#9AA0A8}.gy2{fill:#C9CDD2}
+.sh{fill:#000;opacity:.18}
+.fb{transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.bub{animation:bub 2.4s steps(8) infinite;opacity:0}.bub.t2{animation-delay:-.8s}.bub.t3{animation-delay:-1.6s}
+@keyframes bub{0%{transform:none;opacity:1}100%{transform:translateY(-12px);opacity:0}}
+.duck{animation:duck 1.2s step-end infinite}
+@keyframes duck{0%{transform:none}50%{transform:translateY(-1px)}}
+.soak{animation:soak 3s step-end infinite}
+@keyframes soak{0%{transform:none}50%{transform:translateY(1px)}}</style>
+<g class="soak"><g class="b"><rect x="7" y="13" width="18" height="11"/><rect x="5" y="10" width="2" height="4"/><rect x="25" y="10" width="2" height="4"/></g><rect x="9" y="16" width="1" height="1" class="k"/><rect x="12" y="16" width="1" height="1" class="k"/><rect x="10" y="17" width="1" height="1" class="k"/><rect x="11" y="17" width="1" height="1" class="k"/><rect x="19" y="16" width="1" height="1" class="k"/><rect x="22" y="16" width="1" height="1" class="k"/><rect x="20" y="17" width="1" height="1" class="k"/><rect x="21" y="17" width="1" height="1" class="k"/><rect x="7" y="19" width="3" height="1" class="p"/><rect x="22" y="19" width="3" height="1" class="p"/></g><rect x="3" y="21" width="26" height="1" class="o"/><rect x="4" y="22" width="24" height="6" class="gy2"/><rect x="4" y="21" width="24" height="1" class="c"/><rect x="5" y="28" width="2" height="2" class="o"/><rect x="25" y="28" width="2" height="2" class="o"/><g class="duck"><rect x="24" y="17" width="1" height="1" class="y"/><rect x="25" y="17" width="1" height="1" class="y"/><rect x="24" y="18" width="1" height="1" class="y"/><rect x="25" y="18" width="1" height="1" class="k"/><rect x="26" y="18" width="1" height="1" class="y"/><rect x="27" y="18" width="1" height="1" class="org"/><rect x="23" y="19" width="1" height="1" class="y"/><rect x="24" y="19" width="1" height="1" class="y"/><rect x="25" y="19" width="1" height="1" class="y"/><rect x="26" y="19" width="1" height="1" class="y"/><rect x="24" y="20" width="1" height="1" class="y"/><rect x="25" y="20" width="1" height="1" class="y"/><rect x="26" y="20" width="1" height="1" class="y"/></g><g class="bub"><rect x="11" y="18" width="1" height="1" class="c"/><rect x="10" y="19" width="1" height="1" class="c"/><rect x="12" y="19" width="1" height="1" class="c"/><rect x="11" y="20" width="1" height="1" class="c"/></g><g class="bub t2"><rect x="17" y="19" width="1" height="1" class="c"/><rect x="16" y="20" width="1" height="1" class="c"/><rect x="18" y="20" width="1" height="1" class="c"/><rect x="17" y="21" width="1" height="1" class="c"/></g><g class="bub t3"><rect x="7" y="17" width="1" height="1" class="c"/><rect x="6" y="18" width="1" height="1" class="c"/><rect x="8" y="18" width="1" height="1" class="c"/><rect x="7" y="19" width="1" height="1" class="c"/></g>
+</svg>

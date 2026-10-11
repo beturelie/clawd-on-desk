@@ -1460,6 +1460,32 @@ describe("buildStateBody — Stop → ApiError upgrade", () => {
     assert.ok(!("assistant_last_output_truncated" in body));
   });
 
+  it("adds the reply's mood marker as emotion on normal Stop", () => {
+    const longBody = "x".repeat(5000);
+    const file = writeTmpJsonl([
+      { type: "assistant", sessionId: "sid-1", message: { content: `${longBody}\n\n<!-- mood: shy -->` } },
+    ]);
+    const body = buildStateBody(
+      "Stop",
+      { session_id: "sid-1", transcript_path: file },
+      mockResolve
+    );
+    assert.strictEqual(body.assistant_last_output_truncated, true);
+    assert.strictEqual(body.emotion, "shy");
+  });
+
+  it("omits emotion when the reply has no mood marker", () => {
+    const file = writeTmpJsonl([
+      { type: "assistant", sessionId: "sid-1", message: { content: "Implemented the fix." } },
+    ]);
+    const body = buildStateBody(
+      "Stop",
+      { session_id: "sid-1", transcript_path: file },
+      mockResolve
+    );
+    assert.ok(!("emotion" in body));
+  });
+
   it("does not add stale assistant output when Stop upgrades to ApiError", () => {
     const file = writeTmpJsonl([
       { type: "assistant", sessionId: "sid-1", message: { content: "previous output" } },

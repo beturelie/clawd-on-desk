@@ -21,6 +21,7 @@ docs/**
 !docs/guides/copilot-setup.md
 !docs/guides/copilot-setup.zh-CN.md
 !docs/guides/guide-theme-creation.md
+!docs/guides/pixel-crab.md
 !docs/guides/known-limitations.md
 !docs/guides/agent-questions.md
 !docs/guides/known-limitations.zh-CN.md
@@ -109,6 +110,7 @@ logs/
 scripts/*
 # Deterministic source-backed macOS tray asset generator
 !scripts/generate-mac-tray-icons.js
+!scripts/install-crab-moods.js
 !scripts/update-official-theme-catalog-snapshot.js
 !scripts/manual/
 scripts/manual/*

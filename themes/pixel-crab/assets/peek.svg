@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="320" height="320" shape-rendering="crispEdges">
+<title>偷看 (peek)</title>
+<style>
+.b{fill:#D97757}.b2{fill:#B65B3E}.k{fill:#221B17}.w{fill:#FFFFFF}
+.p{fill:#FF8FA0}.p2{fill:#E8607A}.ang{fill:#E5484D}.ck{fill:#D9A55B}.sc{fill:#5B6FD6}.fi{fill:#4FA3C7}.sf{fill:#5DA9E9}.cap{fill:#4B5FC9}.cl{fill:#8F96A3}.wall{fill:#B9BFC7}.gd{fill:#2F8F5B}.brk{fill:#B5523B}.org{fill:#F08A3C}.scr{fill:#24302E}.ph{fill:#7FD99A}.r{fill:#E5484D}.y{fill:#F7C948}.c{fill:#7CC8F2}.gr{fill:#6BCB77}
+.o{fill:#3A302B}.f{fill:#FBF6EE}.gy{fill:#9AA0A8}.gy2{fill:#C9CDD2}
+.sh{fill:#000;opacity:.18}
+.fb{transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.pop{animation:pop 3s step-end infinite}
+@keyframes pop{0%{transform:translateY(7px)}10%{transform:translateY(4px)}20%{transform:none}70%{transform:translateY(4px)}80%{transform:translateY(7px)}}
+.eye{animation:eye 3s step-end infinite}
+@keyframes eye{0%{transform:none}35%{transform:translateX(-1px)}50%{transform:translateX(1px)}65%{transform:none}}</style>
+<g class="pop"><g class="b"><rect x="7" y="13" width="18" height="11"/></g><g class="k eye"><rect x="10" y="15" width="2" height="3"/><rect x="20" y="15" width="2" height="3"/></g></g><rect x="0" y="21" width="32" height="11" class="wall"/><g class="o"><rect x="0" y="21" width="32" height="1"/><rect x="0" y="25" width="32" height="1"/><rect x="0" y="29" width="32" height="1"/><rect x="6" y="22" width="1" height="3"/><rect x="18" y="22" width="1" height="3"/><rect x="28" y="22" width="1" height="3"/><rect x="12" y="26" width="1" height="3"/><rect x="24" y="26" width="1" height="3"/></g><g class="b"><rect x="7" y="19" width="3" height="2"/><rect x="22" y="19" width="3" height="2"/></g>
+</svg>
