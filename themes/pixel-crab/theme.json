@@ -197,7 +197,6 @@
     "redpen": "redpen.svg",
     "fork": "fork.svg"
   },
-  "emotionDurationMs": 4000,
   "miniMode": {
     "supported": false
   }

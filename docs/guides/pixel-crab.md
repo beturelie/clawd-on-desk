@@ -32,7 +32,7 @@ npm run install:crab-moods
 <!-- mood: shy -->
 ```
 
-回复结束时，Claude Code 的 Stop hook 会读到这个标记，桌宠就播放 4 秒对应的表情，然后回到原来的状态。也可以写成看得见的 `[mood: shy]`。
+回复结束时，Claude Code 的 Stop hook 会读到这个标记，桌宠就用对应的表情代替“完成庆祝”，停留约 4 秒后回到待机。也可以写成看得见的 `[mood: shy]`。
 
 不想要了：
 
@@ -43,6 +43,5 @@ npm run uninstall:crab-moods
 ## 说明
 
 - 只对 Claude Code 生效，并且要用这个主题；其他主题没有 `emotions`，会直接忽略标记。
-- 免打扰、隐藏桌宠、极简模式、正在拖动时不会播。
-- 主题在 `themes/pixel-crab/theme.json`，`emotions` 把名字对应到 `assets/` 里的 SVG，`emotionDurationMs` 控制播放时长（500–15000 毫秒）。
+- 主题在 `themes/pixel-crab/theme.json`，`emotions` 把名字对应到 `assets/` 里的 SVG。
 - 素材由 `beturelie/---Changs` 仓库的 `scripts/build-expressions.mjs` 生成。

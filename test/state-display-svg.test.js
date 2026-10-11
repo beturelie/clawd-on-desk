@@ -394,3 +394,51 @@ describe("multi-file thinking / working pools", () => {
     assert.strictEqual(random.mock.callCount(), 0);
   });
 });
+
+describe("chat emotion completion visual", () => {
+  const crabTheme = themeLoader.loadTheme("pixel-crab");
+  let api;
+  let previousDebounce;
+
+  beforeEach(() => {
+    previousDebounce = process.env.CLAWD_COMPLETION_DEBOUNCE_MS;
+    api = require("../src/state")({ ...makeCtx(), theme: crabTheme });
+  });
+
+  afterEach(() => {
+    if (previousDebounce === undefined) delete process.env.CLAWD_COMPLETION_DEBOUNCE_MS;
+    else process.env.CLAWD_COMPLETION_DEBOUNCE_MS = previousDebounce;
+  });
+
+  const claude = { cwd: "/tmp", editor: "cursor", agentPid: process.pid, agentId: "claude-code" };
+
+  it("shows the named emotion instead of the celebration at a Claude Stop", async () => {
+    process.env.CLAWD_COMPLETION_DEBOUNCE_MS = "0";
+    api.updateSession("mood", "thinking", "UserPromptSubmit", claude);
+    api.updateSession("mood", "attention", "Stop", { ...claude, emotion: "shy" });
+    await new Promise((resolve) => setTimeout(resolve, 1050));
+    assert.strictEqual(api.getCurrentSvg(), "shy.svg");
+  });
+
+  it("carries the emotion through the completion debounce", async () => {
+    process.env.CLAWD_COMPLETION_DEBOUNCE_MS = "300";
+    api.updateSession("mood-held", "thinking", "UserPromptSubmit", claude);
+    api.updateSession("mood-held", "attention", "Stop", { ...claude, emotion: "love" });
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    assert.strictEqual(api.getCurrentSvg(), "love.svg");
+  });
+
+  it("falls back to the celebration for an unknown emotion or another agent", async () => {
+    process.env.CLAWD_COMPLETION_DEBOUNCE_MS = "0";
+    api.updateSession("mood-unknown", "thinking", "UserPromptSubmit", claude);
+    api.updateSession("mood-unknown", "attention", "Stop", { ...claude, emotion: "no-such-mood" });
+    await new Promise((resolve) => setTimeout(resolve, 1050));
+    assert.strictEqual(api.getCurrentSvg(), "happy.svg");
+
+    const cursor = { ...claude, agentId: "cursor-agent" };
+    api.updateSession("mood-cursor", "thinking", "UserPromptSubmit", cursor);
+    api.updateSession("mood-cursor", "attention", "Stop", { ...cursor, emotion: "shy" });
+    await new Promise((resolve) => setTimeout(resolve, 1050));
+    assert.notStrictEqual(api.getCurrentSvg(), "shy.svg");
+  });
+});

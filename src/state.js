@@ -115,9 +115,19 @@ const {
 // Session display hints — validated against theme.displayHintMap keys
 let DISPLAY_HINT_MAP = {};
 let COMPLETION_VISUAL_MAP = {};
+let EMOTION_MAP = {};
 
 function completionVisualForHint(hint) {
   return typeof hint === "string" ? (COMPLETION_VISUAL_MAP[hint] || null) : null;
+}
+
+// Chat emotion from the reply's mood marker. A named theme emotion replaces
+// the completion visual of that one Stop, so it shows instead of the generic
+// celebration rather than racing it.
+function completionVisualForEmotion(name) {
+  return typeof name === "string" && Object.prototype.hasOwnProperty.call(EMOTION_MAP, name)
+    ? EMOTION_MAP[name]
+    : null;
 }
 
 // ── Session tracking ──
@@ -638,6 +648,7 @@ function refreshTheme() {
   SLEEP_MODE = theme.sleepSequence && theme.sleepSequence.mode === "direct" ? "direct" : "full";
   DISPLAY_HINT_MAP = theme.displayHintMap || {};
   COMPLETION_VISUAL_MAP = theme.completionVisualMap || {};
+  EMOTION_MAP = theme.emotions || {};
   hitboxRuntime = createHitboxRuntime(theme);
   HIT_BOXES = hitboxRuntime.hitBoxes;
   FILE_HIT_BOXES = hitboxRuntime.fileHitBoxes;
@@ -1904,6 +1915,7 @@ function scheduleCompletionDebounce(sessionId, debounceMs, payload = {}) {
       : Date.now(),
     assistantLastOutput: text,
     assistantLastOutputTruncated: !!(text && payload && payload.truncated === true),
+    emotionVisual: payload && typeof payload.emotionVisual === "string" ? payload.emotionVisual : null,
   };
   record.timer = setTimeout(() => {
     if (pendingCompletionDebounces.get(sessionId) !== record) return;
@@ -1913,6 +1925,7 @@ function scheduleCompletionDebounce(sessionId, debounceMs, payload = {}) {
       occurredAt: record.occurredAt,
       text: record.assistantLastOutput,
       truncated: record.assistantLastOutputTruncated,
+      emotionVisual: record.emotionVisual,
     });
   }, debounceMs);
   pendingCompletionDebounces.set(sessionId, record);
@@ -2065,7 +2078,7 @@ function promoteCompletion(sessionId, completionPayload = undefined) {
     );
   }
   const completionVisual = session.agentId === "claude-code"
-    ? completionVisualForHint(session.displayHint)
+    ? ((completionPayload && completionPayload.emotionVisual) || completionVisualForHint(session.displayHint))
     : null;
   session.subagentTracker = clearSubagentTracker(cloneSubagentTracker(session));
   // The stored session settles idle, but this Stop consumed the completion
@@ -2298,6 +2311,7 @@ function updateSession(sessionId, state, event, opts = {}) {
     dshCarrier = null,
     ghosttyTerminalId = null,
     displayHint = undefined,
+    emotion = null,
     sessionTitle = null,
     sessionTitleFromPrompt = false,
     contextUsage = null,
@@ -2667,8 +2681,9 @@ function updateSession(sessionId, state, event, opts = {}) {
     && state === "attention"
     && srcAgentId === "claude-code"
     && !normalizedSubagentId;
+  const emotionVisual = isClaudeMainStop ? completionVisualForEmotion(emotion) : null;
   const completionVisual = isClaudeMainStop
-    ? completionVisualForHint(existing && existing.displayHint)
+    ? (emotionVisual || completionVisualForHint(existing && existing.displayHint))
     : null;
   const typedSubagentSnapshotKnown = Object.prototype.hasOwnProperty.call(
     opts,
@@ -2757,6 +2772,7 @@ function updateSession(sessionId, state, event, opts = {}) {
           occurredAt: recapOccurredAt,
           text: incomingAssistantLastOutput,
           truncated: assistantLastOutputTruncated === true,
+          emotionVisual,
         });
       }
     }

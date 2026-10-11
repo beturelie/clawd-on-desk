@@ -1345,13 +1345,10 @@ function addThemeAssetFile(out, filename) {
   if (safe) out.add(safe);
 }
 
-// Chat emotions: optional one-off visuals a theme exposes by name so an agent
-// reply can switch the pet's mood (see src/emotion-reaction.js). Names stay a
-// small lowercase alphabet because they arrive from hook traffic.
+// Chat emotions: optional visuals a theme exposes by name so an agent reply
+// can pick the pet's completion mood (see state.js). Names stay a small
+// lowercase alphabet because they arrive from hook traffic.
 const EMOTION_NAME_RE = /^[a-z][a-z0-9-]{0,31}$/;
-const DEFAULT_EMOTION_DURATION_MS = 4000;
-const MIN_EMOTION_DURATION_MS = 500;
-const MAX_EMOTION_DURATION_MS = 15000;
 
 function isEmotionName(value) {
   return typeof value === "string" && EMOTION_NAME_RE.test(value);
@@ -1366,11 +1363,6 @@ function normalizeEmotionMap(value) {
     if (safeFile) out[name] = safeFile;
   }
   return Object.keys(out).length > 0 ? out : null;
-}
-
-function normalizeEmotionDurationMs(value) {
-  if (!Number.isFinite(value)) return DEFAULT_EMOTION_DURATION_MS;
-  return Math.min(MAX_EMOTION_DURATION_MS, Math.max(MIN_EMOTION_DURATION_MS, Math.round(value)));
 }
 
 function collectRequiredAssetFiles(theme) {
@@ -1716,7 +1708,6 @@ function mergeDefaults(raw, themeId, isBuiltin) {
 
   // chat emotions
   theme.emotions = normalizeEmotionMap(raw.emotions);
-  theme.emotionDurationMs = normalizeEmotionDurationMs(raw.emotionDurationMs);
 
   // workingTiers / jugglingTiers — auto sort descending by minSessions
   if (theme.workingTiers) {
@@ -1851,8 +1842,6 @@ module.exports = {
   collectRequiredAssetFiles,
   isEmotionName,
   normalizeEmotionMap,
-  normalizeEmotionDurationMs,
-  DEFAULT_EMOTION_DURATION_MS,
   deepMergeObject,
   basenameOnly,
   normalizeViewBox,

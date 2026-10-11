@@ -592,17 +592,15 @@ Most third-party themes do not need this. Use `sleepSequence.mode: "direct"` if 
 
 ### Chat Emotions
 
-Optional. Map mood names to one-off visuals. When a Claude Code reply ends with `<!-- mood: shy -->` (or `[mood: shy]`), the Stop hook forwards the name and the pet plays that file once, then returns to its current state:
+Optional. Map mood names to visuals. When a Claude Code reply ends with `<!-- mood: shy -->` (or `[mood: shy]`), the Stop hook forwards the name and the pet shows that file as the completion visual instead of `attention`, for the usual `attention` hold:
 
 ```json
-"emotions": { "shy": "my-theme-shy.svg", "love": "my-theme-love.svg" },
-"emotionDurationMs": 4000
+"emotions": { "shy": "my-theme-shy.svg", "love": "my-theme-love.svg" }
 ```
 
 - Names are lowercase letters, digits and `-`, up to 32 characters; other keys are ignored
 - Emotion files count as required assets, so the validator checks they exist
-- `emotionDurationMs` is clamped to 500–15000 and defaults to 4000
-- Emotions are skipped during Do Not Disturb, mini mode, dragging, or while the pet is hidden
+- An unknown name, or a Stop from another agent, falls back to the normal completion visual
 - See `docs/guides/pixel-crab.md` for a theme that uses them and for adding the marker instructions to `~/.claude/CLAUDE.md`
 
 ### Sounds

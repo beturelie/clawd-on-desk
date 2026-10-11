@@ -138,7 +138,6 @@ function callStatePost(body, overrides = {}) {
       userInputShown: [],
       userInputCleared: [],
       testResults: [],
-      emotions: [],
     };
     const ctx = {
       STATE_SVGS: {
@@ -163,7 +162,6 @@ function callStatePost(body, overrides = {}) {
       showCodexUserInputBubble: (input) => { calls.userInputShown.push(input); return true; },
       clearCodexUserInputBubbles: (...args) => calls.userInputCleared.push(args),
       handleTestResult: (...args) => calls.testResults.push(args),
-      handleEmotion: (...args) => calls.emotions.push(args),
       ...overrides.ctx,
     };
     handleStatePost(makeReq(body, overrides.headers), res, {
@@ -1148,7 +1146,7 @@ describe("server-route-state POST", () => {
     }
   });
 
-  it("relays a chat emotion from a Claude Code Stop", async () => {
+  it("passes a chat emotion from a Claude Code Stop to the session update", async () => {
     const res = await callStatePost(JSON.stringify({
       state: "attention",
       session_id: "mood-session",
@@ -1159,12 +1157,7 @@ describe("server-route-state POST", () => {
 
     assert.strictEqual(res.statusCode, 200);
     assert.strictEqual(res.calls.updateSession.length, 1);
-    assert.deepStrictEqual(res.calls.emotions, [["shy", {
-      sessionId: localSessionKey("mood-session"),
-      agentId: "claude-code",
-      event: "Stop",
-      headless: false,
-    }]]);
+    assert.strictEqual(res.calls.updateSession[0][3].emotion, "shy");
   });
 
   it("drops malformed or out-of-lifecycle chat emotions", async () => {
@@ -1176,23 +1169,8 @@ describe("server-route-state POST", () => {
     ]) {
       const res = await callStatePost(JSON.stringify(body));
       assert.strictEqual(res.statusCode, 200);
-      assert.deepStrictEqual(res.calls.emotions, [], body.session_id);
+      assert.ok(!("emotion" in res.calls.updateSession[0][3]), body.session_id);
     }
-  });
-
-  it("keeps an emotion handler failure from failing the state POST", async () => {
-    const res = await callStatePost(JSON.stringify({
-      state: "attention",
-      session_id: "mood-failure",
-      event: "Stop",
-      agent_id: "claude-code",
-      emotion: "love",
-    }), {
-      ctx: { handleEmotion: () => { throw new Error("renderer gone"); } },
-    });
-
-    assert.strictEqual(res.statusCode, 200);
-    assert.strictEqual(res.calls.updateSession.length, 1);
   });
 
   it("keeps a visual handler failure from failing the state POST", async () => {

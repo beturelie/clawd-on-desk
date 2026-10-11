@@ -483,7 +483,8 @@ function handleStatePost(req, res, options) {
       ) ? data.test_result : null;
       // Chat emotion picked by the reply's mood marker. Same trust-boundary
       // re-validation as test_result: only a Claude Code Stop may carry it,
-      // and the name must match the theme emotion alphabet.
+      // and the name must match the theme emotion alphabet. state.js shows
+      // the theme's mapped file as that Stop's completion visual.
       const emotion = (
         agentId === "claude-code"
         && event === "Stop"
@@ -1107,6 +1108,7 @@ function handleStatePost(req, res, options) {
             dshCarrier,
             ghosttyTerminalId,
             displayHint: display_svg,
+            ...(emotion ? { emotion } : {}),
             sessionTitle,
             sessionTitleFromPrompt,
             contextUsage,
@@ -1151,16 +1153,6 @@ function handleStatePost(req, res, options) {
         if (testResult && !isRetiredClaudePhase && typeof ctx.handleTestResult === "function") {
           try {
             ctx.handleTestResult(testResult, {
-              sessionId: sid,
-              agentId,
-              event,
-              headless: effHeadless,
-            });
-          } catch {}
-        }
-        if (emotion && !isRetiredClaudePhase && typeof ctx.handleEmotion === "function") {
-          try {
-            ctx.handleEmotion(emotion, {
               sessionId: sid,
               agentId,
               event,
