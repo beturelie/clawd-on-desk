@@ -58,6 +58,7 @@ const {
 const {
   readTranscriptTailEntries: readClaudeTranscriptTailEntries,
   extractLastAssistantTextFromEntries: extractLastClaudeAssistantTextFromEntries,
+  extractMoodFromText,
 } = require("../hooks/clawd-hook");
 
 module.exports = function initState(ctx) {
@@ -128,6 +129,48 @@ function completionVisualForEmotion(name) {
   return typeof name === "string" && Object.prototype.hasOwnProperty.call(EMOTION_MAP, name)
     ? EMOTION_MAP[name]
     : null;
+}
+
+// Claude Code can fire Stop before the final reply reaches the transcript, so
+// the hook may miss the mood marker. While the celebration is still showing,
+// re-read the transcript a few times and swap in the mood once it appears.
+const CLAUDE_MOOD_RECHECK_DELAYS_MS = [250, 500, 1000];
+const CLAUDE_MOOD_SCAN_MAX = 200000;
+const claudeMoodRechecks = new Map();
+
+function scheduleClaudeMoodRecheck(sessionId, transcriptPath) {
+  if (Object.keys(EMOTION_MAP).length === 0) return;
+  const safePath = normalizeTranscriptPath(transcriptPath);
+  if (!safePath) return;
+  const previous = claudeMoodRechecks.get(sessionId);
+  if (previous) clearTimeout(previous);
+  let attempt = 0;
+  const run = () => {
+    claudeMoodRechecks.delete(sessionId);
+    const session = sessions.get(sessionId);
+    if (!session || session.agentId !== "claude-code") return;
+    if (session.state !== "idle" && session.state !== "attention") return;
+    if (currentState !== "attention") return;
+    const output = extractLastClaudeAssistantTextFromEntries(
+      readClaudeTranscriptTailEntries(safePath),
+      session.rawSessionId || sessionId,
+      { maxLen: CLAUDE_MOOD_SCAN_MAX }
+    );
+    const file = completionVisualForEmotion(extractMoodFromText(output && output.text));
+    if (file) {
+      debugSession(`claude-mood-recheck sid=${sessionId} attempt=${attempt} file=${file}`);
+      if (file !== currentSvg) setState("attention", file, { bypassMinDisplay: true });
+      return;
+    }
+    if (attempt < CLAUDE_MOOD_RECHECK_DELAYS_MS.length) schedule();
+    else debugSession(`claude-mood-recheck sid=${sessionId} gave-up text=${output && output.text ? "yes" : "no"}`);
+  };
+  const schedule = () => {
+    const timer = setTimeout(run, CLAUDE_MOOD_RECHECK_DELAYS_MS[attempt++]);
+    if (timer && typeof timer.unref === "function") timer.unref();
+    claudeMoodRechecks.set(sessionId, timer);
+  };
+  schedule();
 }
 
 // ── Session tracking ──
@@ -2122,6 +2165,9 @@ function promoteCompletion(sessionId, completionPayload = undefined) {
   // global pending queue here; pendingTimer/pendingState are process-wide, not
   // per-session, so clearing them would swallow another session's visual.
   setState("attention", completionVisual);
+  if (session.agentId === "claude-code" && !(completionPayload && completionPayload.emotionVisual)) {
+    scheduleClaudeMoodRecheck(sessionId, session.transcriptPath);
+  }
   return true;
 }
 
@@ -2682,6 +2728,9 @@ function updateSession(sessionId, state, event, opts = {}) {
     && srcAgentId === "claude-code"
     && !normalizedSubagentId;
   const emotionVisual = isClaudeMainStop ? completionVisualForEmotion(emotion) : null;
+  if (isClaudeMainStop) {
+    debugSession(`claude-mood sid=${sessionId} hook=${emotion || "-"} file=${emotionVisual || "-"}`);
+  }
   const completionVisual = isClaudeMainStop
     ? (emotionVisual || completionVisualForHint(existing && existing.displayHint))
     : null;
@@ -3337,6 +3386,9 @@ function updateSession(sessionId, state, event, opts = {}) {
         && state === "sweeping"
         && (event === "PostCompact" || event === "event_msg:context_compacted"),
     });
+    if (isClaudeMainStop && state === "attention" && !emotionVisual) {
+      scheduleClaudeMoodRecheck(sessionId, srcTranscriptPath);
+    }
     return;
   }
 

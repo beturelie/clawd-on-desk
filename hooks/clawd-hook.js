@@ -756,6 +756,10 @@ function buildStateBody(event, payload, resolve) {
       body.api_error_type = apiError.api_error_type;
       body.error_present = true;
     } else {
+      // Claude Code may hand over the final reply directly; prefer its marker,
+      // since the transcript can still be missing that reply at Stop time.
+      const payloadMood = extractMoodFromText(payload.last_assistant_message);
+      if (payloadMood) body.emotion = payloadMood;
       const assistantOutput = extractLastAssistantTextFromEntries(transcriptEntries, sessionId);
       if (assistantOutput && assistantOutput.text) {
         body.assistant_last_output = assistantOutput.text;
@@ -764,7 +768,7 @@ function buildStateBody(event, payload, resolve) {
           ? extractLastAssistantTextFromEntries(transcriptEntries, sessionId, { maxLen: MOOD_SCAN_MAX })
           : assistantOutput;
         const mood = extractMoodFromText(fullOutput && fullOutput.text);
-        if (mood) body.emotion = mood;
+        if (mood && !body.emotion) body.emotion = mood;
       }
     }
   }

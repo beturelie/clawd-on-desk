@@ -442,3 +442,36 @@ describe("chat emotion completion visual", () => {
     assert.notStrictEqual(api.getCurrentSvg(), "shy.svg");
   });
 });
+
+describe("chat emotion transcript recheck", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const crabTheme = themeLoader.loadTheme("pixel-crab");
+  let previousDebounce;
+
+  beforeEach(() => { previousDebounce = process.env.CLAWD_COMPLETION_DEBOUNCE_MS; });
+  afterEach(() => {
+    if (previousDebounce === undefined) delete process.env.CLAWD_COMPLETION_DEBOUNCE_MS;
+    else process.env.CLAWD_COMPLETION_DEBOUNCE_MS = previousDebounce;
+  });
+
+  it("swaps in the mood once the late reply lands in the transcript", async () => {
+    process.env.CLAWD_COMPLETION_DEBOUNCE_MS = "0";
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "clawd-mood-"));
+    const file = path.join(dir, "t.jsonl");
+    const line = (o) => JSON.stringify(o) + "\n";
+    fs.writeFileSync(file, line({ type: "user", sessionId: "late", message: { content: "喵" } }));
+    const api = require("../src/state")({ ...makeCtx(), theme: crabTheme });
+    const claude = { cwd: "/tmp", editor: "cursor", agentPid: process.pid, agentId: "claude-code", transcriptPath: file };
+    api.updateSession("late", "thinking", "UserPromptSubmit", claude);
+    await new Promise((resolve) => setTimeout(resolve, 1050));
+    api.updateSession("late", "attention", "Stop", { ...claude, transcriptPath: undefined });
+    assert.strictEqual(api.getCurrentSvg(), "happy.svg");
+    fs.appendFileSync(file, line({
+      type: "assistant", sessionId: "late",
+      message: { content: [{ type: "text", text: "喵～\n\n<!-- mood: meow -->" }] },
+    }));
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    assert.strictEqual(api.getCurrentSvg(), "meow.svg");
+  });
+});

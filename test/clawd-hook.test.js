@@ -1474,6 +1474,18 @@ describe("buildStateBody — Stop → ApiError upgrade", () => {
     assert.strictEqual(body.emotion, "shy");
   });
 
+  it("prefers the mood in Claude Code's last_assistant_message", () => {
+    const file = writeTmpJsonl([
+      { type: "assistant", sessionId: "sid-1", message: { content: "older text" } },
+    ]);
+    const body = buildStateBody(
+      "Stop",
+      { session_id: "sid-1", transcript_path: file, last_assistant_message: "汪！\n\n<!-- mood: woof -->" },
+      mockResolve
+    );
+    assert.strictEqual(body.emotion, "woof");
+  });
+
   it("omits emotion when the reply has no mood marker", () => {
     const file = writeTmpJsonl([
       { type: "assistant", sessionId: "sid-1", message: { content: "Implemented the fix." } },
